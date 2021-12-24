@@ -11,16 +11,14 @@
 <body>
   <div th:insert="fragments/navbar"></div>
 
+  <div class="container" style="margin-top: 5%">
+    <form action ="meteo" method ="post" class="form-floating">
+      <input class="form-control" name ="address " id="address" placeholder="adresse">
+      <label for ="address"> Veuillez saisir une adresse :</label >
+      <button type="submit" class="btn btn-primary" style="margin: 5% 20%; padding: 1% 30%;"> Valider </button >
+    </form>
 
-  <form action ="meteo" method ="post">
-    <div>
-      <label for ="address"> Please input your adress : </label >
-      <input name ="address " id="address">
-    </div>
-    <div>
-      <button > Get the weather at the given address ! </button >
-    </div>
-  </form>
+  </div>
 
 
 </body>
