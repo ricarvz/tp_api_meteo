@@ -19,30 +19,21 @@ public class MeteoController {
 
     @PostMapping("/meteo")
     public String meteo(@RequestBody String saisie, Model model){
-        //model.addAttribute("userAddress", saisie);
-
         RestTemplateBuilder builder = new RestTemplateBuilder();
         RestTemplate restTemplate = builder.build();
 
-        final String adresseUri = new String("https://api-adresse.data.gouv.fr/search/?q="+ saisie + "&limit=1");
+        final String adresseUri = "https://api-adresse.data.gouv.fr/search/?q=" + saisie + "&limit=1";
         AddressQuery addr = restTemplate.getForObject(adresseUri, AddressQuery.class);
-
-        String street = addr.getFeatures()[0].getProperties().getStreet();
+        
         String city = addr.getFeatures()[0].getProperties().getCity();
         double [] coor = addr.getFeatures()[0].getGeometry().getCoordinates();
-
-        model.addAttribute("street", street);
+        
         model.addAttribute("city", city);
 
-        model.addAttribute("lat", coor[0]);
-        model.addAttribute("long", coor[1]);
-
-
-
-        //---------------------------------------------------
+        //---------------------------------------------------//
         //token d'identification de MeteoConcept api
-        final String token = new String("17761dd05bbe22ee6f61b4b0a72c118f5df3f5bf3df409b86bb1ff2fb48afc61");
-        final String meteoUri = new String("https://api.meteo-concept.com/api/forecast/daily?token=") + token+
+        final String token = "17761dd05bbe22ee6f61b4b0a72c118f5df3f5bf3df409b86bb1ff2fb48afc61";
+        final String meteoUri = "https://api.meteo-concept.com/api/forecast/daily?token=" + token +
                                 "&latlng=" + coor[1] + "," + coor[0];
 
 
@@ -54,20 +45,19 @@ public class MeteoController {
 
 
         for (int i = 0; i < meteo.getForecast().length; i++) {
-            int weather, tmin, tmax, probarain;
-
-//            day = meteo.getForecast()[i].getDay();
-            weather = meteo.getForecast()[i].getWeather();
+            int weather_code, tmin, tmax, probarain;
+            
+            weather_code = meteo.getForecast()[i].getWeather();
             tmin = meteo.getForecast()[i].getTmin();
             tmax = meteo.getForecast()[i].getTmax();
             probarain = meteo.getForecast()[i].getProbarain();
 
-            model.addAttribute("weather_" + i, weather);
+            model.addAttribute("weather_" + i, weather_code);
             model.addAttribute("tmin_" + i, tmin);
             model.addAttribute("tmax_" + i, tmax);
             model.addAttribute("probarain_" + i, probarain);
             model.addAttribute("date_" + i, date.plusDays(i).format(formatter));    //.format(formatter) permet d'envoyer la date au formattage défini précédement
-            model.addAttribute("icon_" + i, weatherIconConverter(weather));
+            model.addAttribute("icon_" + i, weatherIconConverter(weather_code));
 
         }
 
@@ -78,11 +68,11 @@ public class MeteoController {
     //fonction permettant de lier le code météo fournit par l'api meteo avec l'icone correspondant
     String weatherIconConverter(int weatherCode){
         //ensoleillé
-        if (weatherCode<= 2 ){
+        if (weatherCode<= 3){
             return "sunny.svg";
         }
         //nuageux
-        else if (weatherCode>=3 && weatherCode<=7){
+        else if (weatherCode>=4 && weatherCode<=7){
             return "cloudy.svg";
         }
         //pluie
