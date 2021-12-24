@@ -22,36 +22,38 @@ public class MeteoController {
         RestTemplateBuilder builder = new RestTemplateBuilder();
         RestTemplate restTemplate = builder.build();
 
+        //url de l'api Adresse permettant de récupérer les coordonnées géographiques de l'adresse saisie
         final String adresseUri = "https://api-adresse.data.gouv.fr/search/?q=" + saisie + "&limit=1";
-        AddressQuery addr = restTemplate.getForObject(adresseUri, AddressQuery.class);
+        AddressQuery addr = restTemplate.getForObject(adresseUri, AddressQuery.class);  //faire une requête vers Adresse API
         
-        String city = addr.getFeatures()[0].getProperties().getCity();
-        double [] coor = addr.getFeatures()[0].getGeometry().getCoordinates();
-        
+        String city = addr.getFeatures()[0].getProperties().getCity();          //récupérer la ville de l'adresse
+        double [] coor = addr.getFeatures()[0].getGeometry().getCoordinates();  //récupérer les coordonnées géographiques de l'adresse
         model.addAttribute("city", city);
 
-        //---------------------------------------------------//
+
         //token d'identification de MeteoConcept api
         final String token = "17761dd05bbe22ee6f61b4b0a72c118f5df3f5bf3df409b86bb1ff2fb48afc61";
+        //url de l'api météo permettant de récupérer les prévisions météo selon les coordonnées géographiques
         final String meteoUri = "https://api.meteo-concept.com/api/forecast/daily?token=" + token +
                                 "&latlng=" + coor[1] + "," + coor[0];
 
 
-        WeatherQuery meteo = restTemplate.getForObject(meteoUri, WeatherQuery.class);
+        WeatherQuery meteo = restTemplate.getForObject(meteoUri, WeatherQuery.class);   //requête vers Meteo API
 
         LocalDate date = LocalDate.now();       //récupérer la date d'aujourd'hui
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd LLLL yyyy");    //Permet de formatter la date en jour/mois/année
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd LLLL yyyy");    //Permet de formatter la date sous la forme jour mois année
 
 
-
+        //on récupère les prévisions météo de chaque jour pour les envoyer au template
         for (int i = 0; i < meteo.getForecast().length; i++) {
             int weather_code, tmin, tmax, probarain;
             
-            weather_code = meteo.getForecast()[i].getWeather();
-            tmin = meteo.getForecast()[i].getTmin();
-            tmax = meteo.getForecast()[i].getTmax();
-            probarain = meteo.getForecast()[i].getProbarain();
+            weather_code = meteo.getForecast()[i].getWeather();     //code météo du jour (cf documentation API météo)
+            tmin = meteo.getForecast()[i].getTmin();                //température minimale
+            tmax = meteo.getForecast()[i].getTmax();                //température maximale
+            probarain = meteo.getForecast()[i].getProbarain();      //probabilité de pluie en %
 
+            //envoyer chaque attribut au template (le numéro _i permet de les différencier)
             model.addAttribute("weather_" + i, weather_code);
             model.addAttribute("tmin_" + i, tmin);
             model.addAttribute("tmax_" + i, tmax);
@@ -65,7 +67,11 @@ public class MeteoController {
     }
 
 
-    //fonction permettant de lier le code météo fournit par l'api meteo avec l'icone correspondant
+    /**
+     *fonction permettant de lier le code météo fournit par l'api meteo avec l'icone correspondant
+     * @param weatherCode
+     * @return icon file name
+     */
     String weatherIconConverter(int weatherCode){
         //ensoleillé
         if (weatherCode<= 3){
