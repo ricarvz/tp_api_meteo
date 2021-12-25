@@ -26,7 +26,7 @@ public class MeteoController {
         final String adresseUri = "https://api-adresse.data.gouv.fr/search/?q=" + saisie + "&limit=1";
         AddressQuery addr = restTemplate.getForObject(adresseUri, AddressQuery.class);  //faire une requête vers Adresse API
         
-        String city = addr.getFeatures()[0].getProperties().getCity();          //récupérer la ville de l'adresse
+        String city = addr.getFeatures()[0].getProperties().getCity();          //récupérer la ville de l'adresse (on prend uniquement la première ville renvoyé par l'API. Il n'y a pas de vérification de l'adresse avant)
         double [] coor = addr.getFeatures()[0].getGeometry().getCoordinates();  //récupérer les coordonnées géographiques de l'adresse
         model.addAttribute("city", city);
 
